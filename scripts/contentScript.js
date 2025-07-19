@@ -1,24 +1,25 @@
 const svgUrl = chrome.runtime.getURL('icons/fresh_tomato.svg');
 
+/**
+ * Injects Rotten Tomatoes rating SVG into Netflix thumbnails.
+ * It checks for existing containers, fetches ratings, and appends the SVG.
+ * @returns {void}
+ */
 function injectSVG() {
     const containers = document.querySelectorAll('.boxart-container');
     if (!containers) return;
     console.log('Found containers:', containers.length);
 
     for (const container of containers) {
-        if (container.closest('.mobile-games-row')) return; // Skip if the container is part of a mobile games row
+        if (container.closest('.mobile-games-row')) return; // Skip mobile games row
 
         if (!container.querySelector('.rotten-tomato-svg')) {
             const parentLink = container.closest('a');
             const title = parentLink ? parentLink.getAttribute('aria-label') : '';
-            console.log('Title:', title);
+            if (!title) continue;
+
             getRatingFromRottenTomatoes(title).then(rating => {
-                console.log('Rotten Tomatoes Rating:', rating);
-                let numericRating = 'N/A';
-                if (rating && typeof rating === 'string' && rating.endsWith('%')) {
-                    numericRating = parseInt(rating, 10);
-                }
-                const wrapper = createRatingView(numericRating);
+                const wrapper = createRatingView(rating);
                 container.style.position = 'relative';
                 container.appendChild(wrapper);
             }).catch(err => {
@@ -29,6 +30,12 @@ function injectSVG() {
     };
 }
 
+/**
+ * Creates a view for the Rotten Tomatoes rating.
+ * Which will be appended to the thumbnail container.
+ * @param {number|null} rating - The Rotten Tomatoes rating.
+ * @returns {HTMLElement} The wrapper element containing the rating view.
+ */
 function createRatingView(rating) {
     const wrapper = document.createElement('div');
     wrapper.className = 'rotten-tomato-svg';
@@ -54,7 +61,7 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    ratingSpan.textContent = rating !== 'N/A' ? `${rating}%` : 'N/A';
+    ratingSpan.textContent = rating !== null ? `${rating}%` : 'N/A';
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
     ratingSpan.style.color = '#222';
@@ -66,19 +73,35 @@ function createRatingView(rating) {
     return wrapper;
 }
 
+/**
+ * Fetches the Rotten Tomatoes rating for a given title.
+ * @param {string} title - The title of the movie or show.
+ * @returns {Promise<number|null>} The Rotten Tomatoes rating or null if not found.
+ */
 function getRatingFromRottenTomatoes(title) {
     return new Promise((resolve) => {
-        chrome.runtime.sendMessage(
-            { type: 'fetch-rt-rating', title },
-            (response) => {
-                resolve(response && response.rating ? response.rating : null);
+        // First, try to get the rating from chrome local storage
+        chrome.storage.local.get(['ratings'], (result) => {
+            const ratings = result.ratings || {};
+            if (ratings[title] && typeof ratings[title].value === 'number') {
+                console.log('Rating found in storage:', ratings[title].value);
+                resolve(ratings[title].value);
+            } else {
+                // If not found, fetch from API
+                chrome.runtime.sendMessage(
+                    { type: 'fetch-rt-rating', title },
+                    (response) => {
+                        console.log('Fetched rating from API:', response.rating);
+                        resolve(response && response.rating ? response.rating : null);
+                    }
+                );
             }
-        );
+        });
     });
 }
 
 injectSVG();
 
-// Run again if new thumbnails are loaded (e.g., scrolling)
+// Observe changes in the document to inject the SVG when new thumbnails are added
 const observer = new MutationObserver(injectSVG);
 observer.observe(document.body, { childList: true, subtree: true });
