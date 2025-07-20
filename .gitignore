@@ -1,2 +1,18 @@
+# Ignore configuration scripts
 scripts/config.js
+
+# Ignore editor settings
 .vscode/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore OS-specific files
+.DS_Store
+
+# Ignore log files
+*.log
+
+# Ignore build output
+dist/
+build/

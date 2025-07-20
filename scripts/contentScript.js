@@ -11,6 +11,7 @@ function injectSVG() {
     console.log('Found containers:', containers.length);
 
     for (const container of containers) {
+        if (!(container instanceof HTMLElement)) continue;
         if (container.closest('.mobile-games-row')) return; // Skip mobile games row
 
         if (!container.querySelector('.rotten-tomato-svg')) {
