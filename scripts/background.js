@@ -9,31 +9,36 @@ chrome.storage.local.get(['apiCallCount', 'lastApiCallDate'], (result) => {
     lastApiCallDate = result.lastApiCallDate || getTodayString();
 });
 
-/**
- * Fetches rotten tomatoes rating from provided title with the OMDB API.
- * @param {string} title - The title of the movie or show.
- * @returns {Promise<number|null>} The Rotten Tomatoes rating or null if not found.
- */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type === 'fetch-rt-rating' && request.title) {
-        updateDailyApiCallCount();
+chrome.runtime.onMessage.addListener(
+    /**
+     * Handles messages for fetching Rotten Tomatoes ratings.
+     * @param {object} request
+     * @param {object} sender
+     * @param {function} sendResponse
+     * @returns {boolean | undefined} Return true to indicate async response, otherwise undefined.
+     */
+    (request, sender, sendResponse) => {
+        if (request.type === 'fetch-rt-rating' && request.title) {
+            updateDailyApiCallCount();
 
-        const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                let rating = null;
-                if (data && data.Ratings) {
-                    const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
-                    rating = rt ? parseInt(rt.Value) : null;
-                    saveRatingToStorage(request.title, rating);
-                }
-                sendResponse({ rating });
-            })
-            .catch(() => sendResponse({ rating: null }));
-        return true;
+            // @ts-ignore
+            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let rating = null;
+                    if (data && data.Ratings) {
+                        const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
+                        rating = rt ? parseInt(rt.Value) : null;
+                        saveRatingToStorage(request.title, rating);
+                    }
+                    sendResponse({ rating });
+                })
+                .catch(() => sendResponse({ rating: null }));
+            return true;
+        }
     }
-});
+);
 
 /**
  * Gets today's date as a string in the format YYYY-MM-DD.
@@ -70,7 +75,7 @@ function updateDailyApiCallCount() {
  * Saves a movie rating to Chrome's local storage.
  *
  * @param {string} title - The title of the movie.
- * @param {number} rating - The rating value to be saved.
+ * @param {number | null} rating - The rating value to be saved.
  */
 function saveRatingToStorage(title, rating) {
     chrome.storage.local.get(['ratings'], (result) => {
