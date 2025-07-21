@@ -14,7 +14,7 @@ Rotten Score is a Chrome extension that enhances your Netflix browsing experienc
 
 1. **Clone or Download the Repository**
    ```sh
-   git clone https://github.com/yourusername/rotten-score.git
+   git clone https://github.com/rahatibrahim/rotten-score.git
    ```
 
 2. **Load the Extension in Chrome**
@@ -64,7 +64,6 @@ Rotten Score is a Chrome extension that enhances your Netflix browsing experienc
 
 - [OMDb API](https://www.omdbapi.com/) for movie data.
 - Rotten Tomatoes for ratings.
-- Icons from [flaticon.com](https://www.flaticon.com/) and custom SVGs.
 
 ## License
 
