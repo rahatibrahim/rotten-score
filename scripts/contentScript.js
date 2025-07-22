@@ -1,4 +1,5 @@
 const svgUrl = chrome.runtime.getURL('icons/fresh_tomato.svg');
+let callCount = 0;
 
 /**
  * Injects Rotten Tomatoes rating SVG into Netflix thumbnails.
@@ -6,15 +7,16 @@ const svgUrl = chrome.runtime.getURL('icons/fresh_tomato.svg');
  * @returns {void}
  */
 function injectSVG() {
+    console.log(`injectSVG called ${callCount++} times`);
     const containers = document.querySelectorAll('.boxart-container');
     if (!containers) return;
     console.log('Found containers:', containers.length);
 
     for (const container of containers) {
         if (!(container instanceof HTMLElement)) continue;
-        if (container.closest('.mobile-games-row')) return; // Skip mobile games row
+        if (container.closest('.mobile-games-row')) continue; // Skip mobile games row
 
-        if (!container.querySelector('.rotten-tomato-svg')) {
+        if (!container.hasAttribute('data-rt-injected')) {
             const parentLink = container.closest('a');
             const title = parentLink ? parentLink.getAttribute('aria-label') : '';
             if (!title) continue;
@@ -23,11 +25,11 @@ function injectSVG() {
                 const wrapper = createRatingView(rating);
                 container.style.position = 'relative';
                 container.appendChild(wrapper);
+                container.setAttribute('data-rt-injected', 'true'); // Mark as processed
             }).catch(err => {
                 console.error('Failed to fetch Rotten Tomatoes rating:', err);
             });
         }
-        break;
     };
 }
 
@@ -62,7 +64,7 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    ratingSpan.textContent = rating !== null ? `${rating}%` : 'N/A';
+    ratingSpan.textContent = rating !== -1 ? `${rating}%` : 'N/A';
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
     ratingSpan.style.color = '#222';
@@ -85,14 +87,14 @@ function getRatingFromRottenTomatoes(title) {
         chrome.storage.local.get(['ratings'], (result) => {
             const ratings = result.ratings || {};
             if (ratings[title] && typeof ratings[title].value === 'number') {
-                console.log('Rating found in storage:', ratings[title].value);
+                // console.log('Rating found in storage:', ratings[title].value);
                 resolve(ratings[title].value);
             } else {
                 // If not found, fetch from API
                 chrome.runtime.sendMessage(
                     { type: 'fetch-rt-rating', title },
                     (response) => {
-                        console.log('Fetched rating from API:', response.rating);
+                        // console.log('Fetched rating from API:', response.rating);
                         resolve(response && response.rating ? response.rating : null);
                     }
                 );
@@ -101,8 +103,20 @@ function getRatingFromRottenTomatoes(title) {
     });
 }
 
-injectSVG();
+function waitForContent(callback) {
+    const interval = setInterval(() => {
+        const targetNodes = document.querySelectorAll('.lolomo');
+        if (targetNodes.length > 0) {
+            clearInterval(interval);
+            callback(targetNodes);
+        }
+    }, 300);
+}
 
-// Observe changes in the document to inject the SVG when new thumbnails are added
-const observer = new MutationObserver(injectSVG);
-observer.observe(document.body, { childList: true, subtree: true });
+waitForContent((targetNodes) => {
+    injectSVG();
+    targetNodes.forEach(targetNode => {
+        const observer = new MutationObserver(injectSVG);
+        observer.observe(targetNode, { childList: true, subtree: false });
+    });
+});
