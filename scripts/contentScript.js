@@ -2,12 +2,12 @@ const svgUrl = chrome.runtime.getURL('icons/fresh_tomato.svg');
 let callCount = 0;
 
 /**
- * Injects Rotten Tomatoes rating SVG into Netflix thumbnails.
+ * Injects Rotten Tomatoes rating into Netflix thumbnails.
  * It checks for existing containers, fetches ratings, and appends the SVG.
  * @returns {void}
  */
-function injectSVG() {
-    console.log(`injectSVG called ${callCount++} times`);
+function injectRottenTomatoesRating() {
+    console.log(`injectRottenTomatoesRating called ${callCount++} times`);
     const containers = document.querySelectorAll('.boxart-container');
     if (!containers) return;
     console.log('Found containers:', containers.length);
@@ -114,9 +114,9 @@ function waitForContent(callback) {
 }
 
 waitForContent((targetNodes) => {
-    injectSVG();
+    injectRottenTomatoesRating();
     targetNodes.forEach(targetNode => {
-        const observer = new MutationObserver(injectSVG);
+        const observer = new MutationObserver(injectRottenTomatoesRating);
         observer.observe(targetNode, { childList: true, subtree: false });
     });
 });
