@@ -87,14 +87,12 @@ function getRatingFromRottenTomatoes(title) {
         chrome.storage.local.get(['ratings'], (result) => {
             const ratings = result.ratings || {};
             if (ratings[title] && typeof ratings[title].value === 'number') {
-                // console.log('Rating found in storage:', ratings[title].value);
                 resolve(ratings[title].value);
             } else {
                 // If not found, fetch from API
                 chrome.runtime.sendMessage(
                     { type: 'fetch-rt-rating', title },
                     (response) => {
-                        // console.log('Fetched rating from API:', response.rating);
                         resolve(response && response.rating ? response.rating : null);
                     }
                 );
@@ -103,6 +101,11 @@ function getRatingFromRottenTomatoes(title) {
     });
 }
 
+/**
+ * Waits for the content to load and then executes the callback.
+ * It checks for the presence of target nodes and invokes the callback when found.
+ * @param {Function} callback - The callback to execute when content is loaded.
+ */
 function waitForContent(callback) {
     const interval = setInterval(() => {
         const targetNodes = document.querySelectorAll('.lolomo');
