@@ -1,7 +1,6 @@
 body {
     font-family: 'Inter', Arial, sans-serif;
     min-width: 220px;
-    /* padding: 24px; */
     background: #f7f8fa;
     color: #222;
     display: flex;
@@ -40,7 +39,6 @@ body {
     background: #fff8f0;
     padding: 4px 12px;
     border-radius: 8px;
-    /* box-shadow: 0 1px 4px rgba(211,47,47,0.08); */
     border: 1.5px solid #e0e0e0;
     text-align: center;
     min-width: 80px;
