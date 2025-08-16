@@ -6,10 +6,27 @@ let callCount = 0;
  * It checks for existing containers, fetches ratings, and appends the SVG.
  * @returns {void}
  */
-function injectRottenTomatoesRating() {
+function injectRottenTomatoesRating(mutationList = null) {
     console.log(`injectRottenTomatoesRating called ${callCount++} times`);
-    const containers = document.querySelectorAll('.boxart-container');
-    if (!containers) return;
+    let containers = [];
+
+    if (mutationList) {
+        mutationList.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Search for the boxart-container within the added node
+                    const innerContainers = node.querySelectorAll('.boxart-container');
+                    if (innerContainers && innerContainers.length > 0) {
+                        containers.push(...innerContainers);
+                    }
+                }
+            });
+        });
+    } else {
+        containers = document.querySelectorAll('.boxart-container');
+    }
+
+    if (!containers || containers.length === 0) return;
     console.log('Found containers:', containers.length);
 
     for (const container of containers) {
@@ -20,14 +37,16 @@ function injectRottenTomatoesRating() {
             const parentLink = container.closest('a');
             const title = parentLink ? parentLink.getAttribute('aria-label') : '';
             if (!title) continue;
+            
+            container.setAttribute('data-rt-injected', 'true'); // Mark as processed
 
             getRatingFromRottenTomatoes(title).then(rating => {
                 const wrapper = createRatingView(rating);
                 container.style.position = 'relative';
                 container.appendChild(wrapper);
-                container.setAttribute('data-rt-injected', 'true'); // Mark as processed
             }).catch(err => {
                 console.error('Failed to fetch Rotten Tomatoes rating:', err);
+                container.removeAttribute('data-rt-injected');
             });
         }
     };
@@ -119,7 +138,9 @@ function waitForContent(callback) {
 waitForContent((targetNodes) => {
     injectRottenTomatoesRating();
     targetNodes.forEach(targetNode => {
-        const observer = new MutationObserver(injectRottenTomatoesRating);
+        const observer = new MutationObserver((mutationList => {
+            injectRottenTomatoesRating(mutationList);
+        }));
         observer.observe(targetNode, { childList: true, subtree: false });
     });
 });
