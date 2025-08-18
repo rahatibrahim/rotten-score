@@ -8,6 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Element with id "count" not found in popup.html');
         }
     });
+
+    // Check if API key is already stored
+    chrome.storage.sync.get(['omdbApiKey'], (result) => {
+        if (result.omdbApiKey) {
+            showApiKeyStored();
+        }
+    });
+
+    // Add event listener for remove key button
+    document.getElementById('remove-key').addEventListener('click', removeApiKey);
 });
 
 /**
@@ -51,11 +61,41 @@ document.getElementById('save-key').addEventListener('click', async function () 
         chrome.storage.sync.set({ omdbApiKey: apiKey }, function () {
             showNotification('Key saved successfully!', 'success');
             document.getElementById('omdb-key').value = '';
+            showApiKeyStored();
         });
     } else {
         showNotification('Invalid API key!', 'error');
     }
 });
+
+/**
+ * Shows the API key stored state with remove button
+ */
+function showApiKeyStored() {
+    document.getElementById('api-key-label').textContent = 'API key is stored';
+    document.getElementById('api-key-input').style.display = 'none';
+    document.getElementById('api-key-stored').style.display = 'block';
+}
+
+/**
+ * Removes the stored API key and shows the input form again
+ */
+function removeApiKey() {
+    chrome.storage.sync.remove(['omdbApiKey'], function () {
+        showNotification('API key removed!', 'success');
+        showApiKeyInput();
+    });
+}
+
+/**
+ * Shows the API key input form
+ */
+function showApiKeyInput() {
+    document.getElementById('api-key-label').textContent = 'Enter OMDB API Key';
+    document.getElementById('api-key-input').style.display = 'flex';
+    document.getElementById('api-key-stored').style.display = 'none';
+    document.getElementById('omdb-key').value = '';
+}
 
 /**
  * Shows a notification message.

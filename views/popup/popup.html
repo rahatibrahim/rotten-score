@@ -17,7 +17,7 @@
             <span class="notification-message" id="notification-message">Dashboard</span>
         </div>
         <div class="row api-input-row">
-            <span class="row-title">Enter OMDB API Key</span>
+            <span id="api-key-label" class="row-title">Enter OMDB API Key</span>
             <span id="api-key-input">
                 <input type="text" id="omdb-key" class="field-box" placeholder="Key" />
                 <button id="save-key" class="field-box">
@@ -26,6 +26,9 @@
                     </span>
                 </button>
             </span>
+            <div id="api-key-stored" style="display: none;">
+                <button id="remove-key" class="field-box">Remove Key</button>
+            </div>
         </div>
         <div class="row stats-row">
             <span class="row-title">API Calls Today</span>
