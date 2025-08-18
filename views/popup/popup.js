@@ -1,3 +1,7 @@
+const DEFAULT_NOTIFICATION_TEXT = 'Dashboard';
+const VALIDATION_MOVIE_ID = 'tt3896198';
+const NOTIFICATION_TIME_OUT = 3000;
+
 // Show current API call count
 document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.get(['apiCallCount'], (result) => {
@@ -27,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function validateApiKey(apiKey) {
     try {
-        const url = `https://www.omdbapi.com/?i=tt3896198&apikey=${apiKey}`;
+        const url = `https://www.omdbapi.com/?i=${VALIDATION_MOVIE_ID}&apikey=${apiKey}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -113,8 +117,8 @@ function showNotification(message, type) {
     // Auto-hide after 3 seconds (except for loading state)
     if (type !== 'loading') {
         setTimeout(() => {
-            notificationMessage.textContent = 'Dashboard';
+            notificationMessage.textContent = DEFAULT_NOTIFICATION_TEXT;
             notificationMessage.className = 'notification-message';
-        }, 3000);
+        }, NOTIFICATION_TIME_OUT);
     }
 }
