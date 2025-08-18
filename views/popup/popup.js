@@ -1,5 +1,5 @@
 const DEFAULT_NOTIFICATION_TEXT = 'Dashboard';
-const VALIDATION_MOVIE_ID = 'tt3896198';
+const VALIDATION_MOVIE_ID = 'tt3896198'; // 'tt3896198' is the IMDB ID for "Guardians of the Galaxy Vol. 2"
 const NOTIFICATION_TIME_OUT = 3000;
 
 // Show current API call count
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function validateApiKey(apiKey) {
     try {
-        const url = `https://www.omdbapi.com/?i=${VALIDATION_MOVIE_ID}&apikey=${apiKey}`;
+        const url = `https://www.omdbapi.com/?i=${VALIDATION_MOVIE_ID}&apikey=${encodeURIComponent(apiKey)}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -48,28 +48,30 @@ async function validateApiKey(apiKey) {
 }
 
 // Update your save key event listener
-document.getElementById('save-key').addEventListener('click', async function () {
-    const apiKey = document.getElementById('omdb-key').value.trim();
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('save-key').addEventListener('click', async function () {
+        const apiKey = document.getElementById('omdb-key').value.trim();
 
-    if (!apiKey) {
-        showNotification('Enter an API key.', 'error');
-        return;
-    }
+        if (!apiKey) {
+            showNotification('Enter an API key.', 'error');
+            return;
+        }
 
-    // Show loading state
-    showNotification('Validating...', 'loading');
+        // Show loading state
+        showNotification('Validating...', 'loading');
 
-    const isValid = await validateApiKey(apiKey);
-    if (isValid) {
-        // Save the valid API key
-        chrome.storage.sync.set({ omdbApiKey: apiKey }, function () {
-            showNotification('Key saved successfully!', 'success');
-            document.getElementById('omdb-key').value = '';
-            showApiKeyStored();
-        });
-    } else {
-        showNotification('Invalid API key!', 'error');
-    }
+        const isValid = await validateApiKey(apiKey);
+        if (isValid) {
+            // Save the valid API key
+            chrome.storage.sync.set({ omdbApiKey: apiKey }, function () {
+                showNotification('Key saved successfully!', 'success');
+                document.getElementById('omdb-key').value = '';
+                showApiKeyStored();
+            });
+        } else {
+            showNotification('Invalid API key!', 'error');
+        }
+    });
 });
 
 /**
