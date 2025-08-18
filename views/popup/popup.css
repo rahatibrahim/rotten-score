@@ -21,6 +21,7 @@ body {
     justify-content: center;
     gap: 7px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .row {
@@ -47,7 +48,7 @@ body {
     font-family: 'Archivo', monospace;
     font-size: 1rem;
     font-weight: 400;
-    background: #fff8f0;
+    background: #f3f6fd;
     padding: 4px 12px;
     border-radius: 8px;
     border: 1.5px solid #e0e0e0;
@@ -60,7 +61,7 @@ body {
 
 #count {
     font-size: 1.6rem;
-    color: #d32f2f;
+    color: #6d6d6d;
     min-width: 100px;
     height: 38px;
 }
@@ -77,19 +78,29 @@ input[type="text"] {
     width: 100%;
 }
 
-#save-key {
+button {
     cursor: pointer;
     background: transparent;
-    padding: 4px;
     transition: background-color 0.2s ease;
+    color: #4d5357;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+#save-key {
+    padding: 4px;
 }
 
 #save-key:hover {
-    background: #fff8f0;
+    background: #f0e6ff;
+    border: 1.5px solid #b39ddb;
 }
 
-#save-key:active {
-    transform: scale(0.95);
+#remove-key:hover {
+    background: #ffeaea;
+    border: 1.5px solid #ffb3b3;
 }
 
 .notification-row {
@@ -136,7 +147,13 @@ input[type="text"] {
     }
 
     #save-key:hover {
-        background: #191919;
+        background: #23272f;
+        border: 1.5px solid #4fc3f7;
+    }
+
+    #remove-key:hover {
+        background: #4a2323;
+        border: 1.5px solid #ff7676;
     }
 
     #count {
