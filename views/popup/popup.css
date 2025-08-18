@@ -1,28 +1,41 @@
 body {
     font-family: 'Inter', Arial, sans-serif;
-    min-width: 220px;
+    min-width: 200px;
     background: #f7f8fa;
-    color: #222;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100px;
     box-sizing: border-box;
 }
 
-.stats-row {
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.rowContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin: 0 auto;
+}
+
+.row {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
     background: #ffffff;
     padding: 12px 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    min-width: 160px;
+    border-radius: 7px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    width: 100%;
 }
 
-.stats-title {
+.row-title {
     font-family: 'Bebas Neue', 'Montserrat', Arial, sans-serif;
     font-size: 1.2rem;
     font-weight: 200;
@@ -31,37 +44,81 @@ body {
     text-align: center;
 }
 
-#count {
+.field-box {
     font-family: 'Archivo', monospace;
-    font-size: 1.6rem;
+    font-size: 1rem;
     font-weight: 400;
-    color: #d32f2f;
     background: #fff8f0;
     padding: 4px 12px;
     border-radius: 8px;
     border: 1.5px solid #e0e0e0;
     text-align: center;
-    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+}
+
+#count {
+    font-size: 1.6rem;
+    color: #d32f2f;
+    min-width: 100px;
+    height: 38px;
+}
+
+#api-key-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+input[type="text"] {
+    width: 100%;
+}
+
+#save-key {
+    cursor: pointer;
+    background: transparent;
+    padding: 4px;
+    transition: background-color 0.2s ease;
+}
+
+#save-key:hover {
+    background: #fff8f0;
+}
+
+#save-key:active {
+    transform: scale(0.95);
 }
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
     body {
-        background: #181818;
+        background: #1a1a1a;
         color: #f7f8fa;
     }
 
-    .stats-row {
+    .row {
         background: #343434;
     }
 
-    .stats-title {
+    .row-title {
         color: #fff8f0;
     }
 
-    #count {
+    .field-box {
         background: #191919;
+        color: #f5f5f5;
+        border: 1.5px solid #57797b;
+    }
+
+    #save-key:hover {
+        background: #191919;
+    }
+
+    #count {
         color: #ff5252;
-        border: 1.5px solid #444;
     }
 }
