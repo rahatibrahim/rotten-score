@@ -13,9 +13,8 @@
 
 <body>
     <div class="rowContainer">
-        <div class="row stats-row">
-            <span class="row-title">API Calls Today</span>
-            <span id="count" class="field-box">...</span>
+        <div class="row notification-row" id="notification-row">
+            <span class="notification-message" id="notification-message">Dashboard</span>
         </div>
         <div class="row api-input-row">
             <span class="row-title">Enter OMDB API Key</span>
@@ -27,6 +26,10 @@
                     </span>
                 </button>
             </span>
+        </div>
+        <div class="row stats-row">
+            <span class="row-title">API Calls Today</span>
+            <span id="count" class="field-box">...</span>
         </div>
     </div>
     <script src="popup.js"></script>

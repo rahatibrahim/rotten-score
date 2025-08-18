@@ -41,7 +41,6 @@ body {
     font-weight: 200;
     letter-spacing: 1px;
     color: #725355;
-    text-align: center;
 }
 
 .field-box {
@@ -93,6 +92,23 @@ input[type="text"] {
     transform: scale(0.95);
 }
 
+.notification-row {
+    font-family: 'Bebas Neue', 'Montserrat', Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 200;
+    letter-spacing: 1px;
+    color: #725355;
+    text-align: center;
+}
+
+.notification-message.error {
+    color: #e74c3c;
+}
+
+.notification-message.success {
+    color: #27ae60;
+}
+
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
     body {
@@ -104,8 +120,13 @@ input[type="text"] {
         background: #343434;
     }
 
-    .row-title {
+    .row-title,
+    .notification-row {
         color: #fff8f0;
+    }
+
+    .notification-message.success {
+        color: #1abc9c;
     }
 
     .field-box {
