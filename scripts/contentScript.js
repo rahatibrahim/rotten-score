@@ -1,4 +1,13 @@
-const svgUrl = chrome.runtime.getURL('icons/fresh_tomato.svg');
+const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
+const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
+const NETFLIX_LOLOMO_SELECTOR = '.lolomo';
+const NETFLIX_ROW_SELECTOR = '.lolomoRow';
+const MOBILE_GAMES_ROW_SELECTOR = '.mobile-games-row';
+const CAROUSEL_HANDLE_SELECTOR = '.handle';
+const CAROUSEL_NEXT_CLASS = 'handleNext';
+const CAROUSEL_PREV_CLASS = 'handlePrev';
+const RATING_WRAPPER_CLASS = 'rotten-tomato-svg';
+const DATA_INJECTED_ATTRIBUTE = 'data-rt-injected';
 let callCount = 0;
 
 const activeCarouselObservers = new WeakMap();
@@ -11,19 +20,18 @@ const activeCarouselObservers = new WeakMap();
  * @returns {void}
  */
 function injectRottenTomatoesRating(mutationList = null, containersToProcess = null) {
-    console.log(`injectRottenTomatoesRating called ${callCount++} times`);
+    console.log(`🚀 injectRottenTomatoesRating called ${callCount++} times`);
     let containers = [];
 
     if (containersToProcess) {
         // Direct containers provided (from carousel)
         containers = containersToProcess;
-        console.log('Processing specific containers from carousel:', containers.length);
     } else if (mutationList) {
         mutationList.forEach(mutation => {
             mutation.addedNodes.forEach(node => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Search for the boxart-container within the added node
-                    const innerContainers = node.querySelectorAll('.boxart-container');
+                    // boxart-container is the thumbnail container
+                    const innerContainers = node.querySelectorAll(THUMBNAIL_CONTAINER_SELECTOR);
                     if (innerContainers && innerContainers.length > 0) {
                         containers.push(...innerContainers);
                     }
@@ -32,31 +40,31 @@ function injectRottenTomatoesRating(mutationList = null, containersToProcess = n
         });
     } else {
         // Initial load - get all containers
-        containers = document.querySelectorAll('.boxart-container');
+        containers = document.querySelectorAll(THUMBNAIL_CONTAINER_SELECTOR);
     }
 
     if (!containers || containers.length === 0) return;
-    console.log('Found containers:', containers.length);
+    console.log(`📝 Found ${containers.length} containers to process.`);
 
-    // Rest of your existing code remains the same...
     for (const container of containers) {
         if (!(container instanceof HTMLElement)) continue;
-        if (container.closest('.mobile-games-row')) continue;
+        if (container.closest(MOBILE_GAMES_ROW_SELECTOR)) continue;
 
-        if (!container.hasAttribute('data-rt-injected')) {
+        if (!container.hasAttribute(DATA_INJECTED_ATTRIBUTE)) {
             const parentLink = container.closest('a');
             const title = parentLink ? parentLink.getAttribute('aria-label') : '';
+            
             if (!title) continue;
 
-            container.setAttribute('data-rt-injected', 'true');
-
+            container.setAttribute(DATA_INJECTED_ATTRIBUTE, 'true');
+            
             getRatingFromRottenTomatoes(title).then(rating => {
                 const wrapper = createRatingView(rating);
                 container.style.position = 'relative';
                 container.appendChild(wrapper);
             }).catch(err => {
                 console.error('Failed to fetch Rotten Tomatoes rating:', err);
-                container.removeAttribute('data-rt-injected');
+                container.removeAttribute(DATA_INJECTED_ATTRIBUTE);
             });
         }
     }
@@ -70,7 +78,7 @@ function injectRottenTomatoesRating(mutationList = null, containersToProcess = n
  */
 function createRatingView(rating) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'rotten-tomato-svg';
+    wrapper.className = RATING_WRAPPER_CLASS;
     wrapper.style.position = 'absolute';
     wrapper.style.bottom = '5px';
     wrapper.style.right = '5px';
@@ -86,7 +94,7 @@ function createRatingView(rating) {
     wrapper.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
 
     const img = document.createElement('img');
-    img.src = svgUrl;
+    img.src = SVG_URL;
     img.style.width = '20px';
     img.style.height = '20px';
     img.style.display = 'inline-block';
@@ -115,6 +123,7 @@ function getRatingFromRottenTomatoes(title) {
         // First, try to get the rating from chrome local storage
         chrome.storage.local.get(['ratings'], (result) => {
             const ratings = result.ratings || {};
+            
             if (ratings[title] && typeof ratings[title].value === 'number') {
                 resolve(ratings[title].value);
             } else {
@@ -122,7 +131,8 @@ function getRatingFromRottenTomatoes(title) {
                 chrome.runtime.sendMessage(
                     { type: 'fetch-rt-rating', title },
                     (response) => {
-                        resolve(response && response.rating ? response.rating : null);
+                        const rating = response && response.rating ? response.rating : null;
+                        resolve(rating);
                     }
                 );
             }
@@ -132,11 +142,12 @@ function getRatingFromRottenTomatoes(title) {
 
 /**
  * Sets up both Netflix observers and carousel listeners efficiently
+ * @returns {void}
  */
 function setupNetflixWatchers() {
     injectRottenTomatoesRating();
 
-    const targetNodes = document.querySelectorAll('.lolomo');
+    const targetNodes = document.querySelectorAll(NETFLIX_LOLOMO_SELECTOR);
     targetNodes.forEach(targetNode => {
         const observer = new MutationObserver((mutationList) => {
             injectRottenTomatoesRating(mutationList);
@@ -150,64 +161,59 @@ function setupNetflixWatchers() {
 
 /**
  * Optimized carousel click handler
+ * @returns {void}
  */
 function handleCarouselClick(event) {
-    const handleButton = event.target.closest('.handle');
+    const handleButton = event.target.closest(CAROUSEL_HANDLE_SELECTOR);
 
-    if (!handleButton || (!handleButton.classList.contains('handleNext') && !handleButton.classList.contains('handlePrev'))) {
+    if (!handleButton || (!handleButton.classList.contains(CAROUSEL_NEXT_CLASS) && !handleButton.classList.contains(CAROUSEL_PREV_CLASS))) {
         return;
     }
 
-    console.log('Carousel navigation button clicked');
-
     // Find the specific carousel row
-    const carouselRow = handleButton.closest('.lolomoRow');
+    const carouselRow = handleButton.closest(NETFLIX_ROW_SELECTOR);
     if (!carouselRow) return;
 
     // Prevent multiple observers on the same row
     if (activeCarouselObservers.has(carouselRow)) return;
 
-    // Setup temporary observer for this specific row
     setupCarouselObserver(carouselRow);
 }
 
 /**
  * Sets up a temporary observer for carousel content
+ * @returns {void}
  */
 function setupCarouselObserver(carouselRow) {
     let foundNewContent = false;
+    let debounceTimeout;
 
     const tempObserver = new MutationObserver((mutationList) => {
         if (foundNewContent) return;
 
-        // Look for new unprocessed containers
-        const newContainers = [];
-        mutationList.forEach(mutation => {
-            mutation.addedNodes.forEach(node => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    const innerContainers = node.querySelectorAll('.boxart-container:not([data-rt-injected])');
-                    if (innerContainers.length > 0) {
-                        newContainers.push(...innerContainers);
-                    }
-                }
-            });
-        });
-
-        if (newContainers.length > 0) {
-            foundNewContent = true;
-            console.log(`Processing ${newContainers.length} new carousel containers`);
-
-            // Process new containers directly
-            injectRottenTomatoesRating(null, newContainers);
-
-            cleanup();
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
         }
+
+        // Debounce to wait for all repositioning to complete
+        debounceTimeout = setTimeout(() => {
+            // Check all containers in this row for unprocessed ones
+            const allContainers = carouselRow.querySelectorAll(`${THUMBNAIL_CONTAINER_SELECTOR}:not([${DATA_INJECTED_ATTRIBUTE}])`);
+            
+            if (allContainers.length > 0) {
+                foundNewContent = true;
+                injectRottenTomatoesRating(null, Array.from(allContainers));
+            }
+            
+            cleanup();
+        }, 300);
     });
 
     const cleanup = () => {
         tempObserver.disconnect();
         activeCarouselObservers.delete(carouselRow);
         if (timeoutId) clearTimeout(timeoutId);
+        if (debounceTimeout) clearTimeout(debounceTimeout);
     };
 
     // Track this observer
@@ -217,17 +223,17 @@ function setupCarouselObserver(carouselRow) {
     tempObserver.observe(carouselRow, { childList: true, subtree: true });
 
     const timeoutId = setTimeout(() => {
-        console.log('Carousel observer timeout - cleaning up');
         cleanup();
     }, 2000);
 }
 
 /**
  * Waits for the Netflix content to be available
+ * @returns {void}
  */
 function waitForContent(callback) {
     const interval = setInterval(() => {
-        const lolomoElements = document.querySelectorAll('.lolomo');
+        const lolomoElements = document.querySelectorAll(NETFLIX_LOLOMO_SELECTOR);
         if (lolomoElements.length > 0) {
             clearInterval(interval);
             callback();
