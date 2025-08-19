@@ -26,15 +26,15 @@ chrome.runtime.onMessage.addListener(
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    let rating = -1;
+                    let rating = null;
                     if (data && data.Ratings) {
                         const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
-                        rating = rt ? parseInt(rt.Value) : -1;
+                        rating = rt ? parseInt(rt.Value) : null;
                         saveRatingToStorage(request.title, rating);
                     }
                     sendResponse({ rating });
                 })
-                .catch(() => sendResponse({ rating: -1 }));
+                .catch(() => sendResponse({ rating: null }));
             return true;
         }
     }
