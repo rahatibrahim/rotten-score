@@ -1,4 +1,4 @@
-importScripts('config.js');
+const { DEBUG } = await import('./config.js');
 
 const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
 const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
@@ -10,6 +10,7 @@ const CAROUSEL_NEXT_CLASS = 'handleNext';
 const CAROUSEL_PREV_CLASS = 'handlePrev';
 const RATING_WRAPPER_CLASS = 'rotten-tomato-svg';
 const DATA_INJECTED_ATTRIBUTE = 'data-rt-injected';
+const RATING_NOT_FOUND = -1;
 let callCount = 0;
 
 const activeCarouselObservers = new WeakMap();
@@ -108,8 +109,8 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    // TODO: Investigate why rating is compared with -1 instead of null or undefined
-    ratingSpan.textContent = rating !== -1 ? `${rating}%` : 'N/A'; 
+    // TODO: Investigate why rating is compared with RATING_NOT_FOUND instead of null or undefined
+    ratingSpan.textContent = rating !== RATING_NOT_FOUND ? `${rating}%` : 'N/A';
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
     ratingSpan.style.color = '#222';
@@ -231,7 +232,7 @@ function setupCarouselObserver(carouselRow) {
     // Start observing with subtree for this specific row
     tempObserver.observe(carouselRow, { childList: true, subtree: true });
 
-    const timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(() => {
         cleanup();
     }, 2000);
 }
