@@ -109,7 +109,7 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    // TODO: Investigate why rating is compared with RATING_NOT_FOUND instead of null or undefined
+    // TODO: Investigate why rating is compared with -1 instead of null or undefined
     ratingSpan.textContent = rating !== RATING_NOT_FOUND ? `${rating}%` : 'N/A';
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
