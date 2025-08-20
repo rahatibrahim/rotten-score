@@ -1,3 +1,5 @@
+importScripts('config.js');
+
 const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
 const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
 const NETFLIX_LOLOMO_SELECTOR = '.lolomo';
@@ -20,7 +22,9 @@ const activeCarouselObservers = new WeakMap();
  * @returns {void}
  */
 function injectRottenTomatoesRating(mutationList = null, containersToProcess = null) {
-    console.log(`🚀 injectRottenTomatoesRating called ${callCount++} times`);
+    if (DEBUG) {
+        console.log(`🚀 injectRottenTomatoesRating called ${callCount++} times`);
+    }
     let containers = [];
 
     if (containersToProcess) {
@@ -44,7 +48,10 @@ function injectRottenTomatoesRating(mutationList = null, containersToProcess = n
     }
 
     if (!containers || containers.length === 0) return;
-    console.log(`📝 Found ${containers.length} containers to process.`);
+
+    if (DEBUG) {
+        console.log(`📝 Found ${containers.length} containers to process.`);
+    }
 
     for (const container of containers) {
         if (!(container instanceof HTMLElement)) continue;
@@ -101,7 +108,8 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    ratingSpan.textContent = rating !== -1 ? `${rating}%` : 'N/A';
+    // TODO: Investigate why rating is compared with -1 instead of null or undefined
+    ratingSpan.textContent = rating !== -1 ? `${rating}%` : 'N/A'; 
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
     ratingSpan.style.color = '#222';
@@ -187,6 +195,7 @@ function handleCarouselClick(event) {
 function setupCarouselObserver(carouselRow) {
     let foundNewContent = false;
     let debounceTimeout;
+    let timeoutId;
 
     const tempObserver = new MutationObserver((mutationList) => {
         if (foundNewContent) return;
