@@ -1,4 +1,4 @@
-const { DEBUG } = await import('./config.js');
+const DEBUG = false;
 
 const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
 const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
