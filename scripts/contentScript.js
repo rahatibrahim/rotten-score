@@ -10,7 +10,6 @@ const CAROUSEL_NEXT_CLASS = 'handleNext';
 const CAROUSEL_PREV_CLASS = 'handlePrev';
 const RATING_WRAPPER_CLASS = 'rotten-tomato-svg';
 const DATA_INJECTED_ATTRIBUTE = 'data-rt-injected';
-const RATING_NOT_FOUND = -1;
 let callCount = 0;
 
 const activeCarouselObservers = new WeakMap();
@@ -109,8 +108,7 @@ function createRatingView(rating) {
     img.style.marginRight = '4px';
 
     const ratingSpan = document.createElement('span');
-    // TODO: Investigate why rating is compared with -1 instead of null or undefined
-    ratingSpan.textContent = rating !== RATING_NOT_FOUND ? `${rating}%` : 'N/A';
+    ratingSpan.textContent = rating !== null ? `${rating}%` : 'N/A';
     ratingSpan.style.fontSize = '15px';
     ratingSpan.style.fontWeight = 'bold';
     ratingSpan.style.color = '#222';
