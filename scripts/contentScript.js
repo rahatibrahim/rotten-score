@@ -1,4 +1,4 @@
-const DEBUG = true;
+const DEBUG = false;
 
 const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
 const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
@@ -23,10 +23,6 @@ function initializeExtension() {
             return;
         }
 
-        if (DEBUG) {
-            console.log('✅ RottenScore: API key found. Initializing extension...');
-        }
-        
         // API key exists, start the extension
         waitForContent(setupNetflixWatchers);
     });

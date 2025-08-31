@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener(
                 return;
             }
 
-            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
+            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${cachedApiKey}`;
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
