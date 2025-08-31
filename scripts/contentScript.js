@@ -1,4 +1,4 @@
-const DEBUG = false;
+const DEBUG = true;
 
 const SVG_URL = chrome.runtime.getURL('icons/fresh_tomato.svg');
 const THUMBNAIL_CONTAINER_SELECTOR = '.boxart-container';
@@ -13,6 +13,24 @@ const DATA_INJECTED_ATTRIBUTE = 'data-rt-injected';
 let callCount = 0;
 
 const activeCarouselObservers = new WeakMap();
+
+/**
+ * Initialize the extension - only run if API key exists
+ */
+function initializeExtension() {
+    chrome.storage.sync.get(['omdbApiKey'], (result) => {
+        if (!result.omdbApiKey) {
+            return;
+        }
+
+        if (DEBUG) {
+            console.log('✅ RottenScore: API key found. Initializing extension...');
+        }
+        
+        // API key exists, start the extension
+        waitForContent(setupNetflixWatchers);
+    });
+}
 
 /**
  * Injects Rotten Tomatoes rating into Netflix thumbnails.
@@ -249,4 +267,4 @@ function waitForContent(callback) {
     }, 300);
 }
 
-waitForContent(setupNetflixWatchers);
+initializeExtension();

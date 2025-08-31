@@ -21,20 +21,31 @@ chrome.runtime.onMessage.addListener(
         if (request.type === 'fetch-rt-rating' && request.title) {
             updateDailyApiCallCount();
 
-            // @ts-ignore
-            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    let rating = null;
-                    if (data && data.Ratings) {
-                        const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
-                        rating = rt ? parseInt(rt.Value) : null;
-                        saveRatingToStorage(request.title, rating);
-                    }
-                    sendResponse({ rating });
-                })
-                .catch(() => sendResponse({ rating: null }));
+            // Get API key from chrome.storage.sync
+            chrome.storage.sync.get(['omdbApiKey'], (result) => {
+                const OMDB_API_KEY = result.omdbApiKey;
+                
+                if (!OMDB_API_KEY) {
+                    console.error('API key not found');
+                    sendResponse({ rating: null, error: 'API key not found' });
+                    return;
+                }
+
+                const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        let rating = null;
+                        if (data && data.Ratings) {
+                            const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
+                            rating = rt ? parseInt(rt.Value) : null;
+                            saveRatingToStorage(request.title, rating);
+                        }
+                        sendResponse({ rating });
+                    })
+                    .catch(() => sendResponse({ rating: null }));
+            });
+            
             return true;
         }
     }
@@ -87,3 +98,34 @@ function saveRatingToStorage(title, rating) {
         chrome.storage.local.set({ ratings });
     });
 }
+
+/**
+ * Updates the extension badge based on API key status
+ */
+function updateExtensionBadge() {
+    chrome.storage.sync.get(['omdbApiKey'], (result) => {
+        if (!result.omdbApiKey) {
+            // Show warning badge when no API key
+            chrome.action.setBadgeText({ text: '!' });
+            chrome.action.setBadgeBackgroundColor({ color: '#FFD600' });
+            chrome.action.setTitle({ title: 'RottenScore - API key required' });
+        } else {
+            // Clear badge when API key exists
+            chrome.action.setBadgeText({ text: '' });
+            chrome.action.setTitle({ title: 'RottenScore - Active' });
+        }
+    });
+}
+
+// Check badge status on startup
+chrome.runtime.onStartup.addListener(updateExtensionBadge);
+chrome.runtime.onInstalled.addListener(updateExtensionBadge);
+
+// Listen for storage changes to update badge
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'sync' && changes.omdbApiKey) {
+        updateExtensionBadge();
+    }
+});
+
+updateExtensionBadge();

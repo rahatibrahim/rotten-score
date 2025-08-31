@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.get(['omdbApiKey'], (result) => {
         if (result.omdbApiKey) {
             showApiKeyStored();
+        } else {
+            showNotification('No API key.', 'error');
         }
     });
 
