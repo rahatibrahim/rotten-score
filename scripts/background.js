@@ -1,5 +1,3 @@
-importScripts('config.js');
-
 let apiCallCount = 0;
 let lastApiCallDate = '';
 
@@ -7,6 +5,10 @@ let lastApiCallDate = '';
 chrome.storage.local.get(['apiCallCount', 'lastApiCallDate'], (result) => {
     apiCallCount = result.apiCallCount || 0;
     lastApiCallDate = result.lastApiCallDate || getTodayString();
+});
+
+chrome.storage.sync.get(['omdbApiKey'], (result) => {
+    cachedApiKey = result.omdbApiKey || null;
 });
 
 chrome.runtime.onMessage.addListener(
@@ -21,31 +23,26 @@ chrome.runtime.onMessage.addListener(
         if (request.type === 'fetch-rt-rating' && request.title) {
             updateDailyApiCallCount();
 
-            // Get API key from chrome.storage.sync
-            chrome.storage.sync.get(['omdbApiKey'], (result) => {
-                const OMDB_API_KEY = result.omdbApiKey;
-                
-                if (!OMDB_API_KEY) {
-                    console.error('API key not found');
-                    sendResponse({ rating: null, error: 'API key not found' });
-                    return;
-                }
+            if (!cachedApiKey) {
+                console.error('API key not found');
+                sendResponse({ rating: null, error: 'API key not found' });
+                return;
+            }
 
-                const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
-                fetch(apiUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        let rating = null;
-                        if (data && data.Ratings) {
-                            const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
-                            rating = rt ? parseInt(rt.Value) : null;
-                            saveRatingToStorage(request.title, rating);
-                        }
-                        sendResponse({ rating });
-                    })
-                    .catch(() => sendResponse({ rating: null }));
-            });
-            
+            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let rating = null;
+                    if (data && data.Ratings) {
+                        const rt = data.Ratings.find(r => r.Source === "Rotten Tomatoes");
+                        rating = rt ? parseInt(rt.Value) : null;
+                        saveRatingToStorage(request.title, rating);
+                    }
+                    sendResponse({ rating });
+                })
+                .catch(() => sendResponse({ rating: null }));
+
             return true;
         }
     }
