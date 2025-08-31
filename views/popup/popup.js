@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.get(['omdbApiKey'], (result) => {
         if (result.omdbApiKey) {
             showApiKeyStored();
+        } else {
+            showNotification('No API key.', 'error');
         }
     });
 
@@ -67,12 +69,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification('Key saved successfully!', 'success');
                 document.getElementById('omdb-key').value = '';
                 showApiKeyStored();
+                reloadNetflixTabs();
             });
         } else {
             showNotification('Invalid API key!', 'error');
         }
     });
 });
+
+/**
+ * Reloads Netflix tabs after API key changes
+ */
+function reloadNetflixTabs() {
+    chrome.tabs.query({ url: "*://*.netflix.com/*" }, (tabs) => {
+        tabs.forEach(tab => {
+            chrome.tabs.reload(tab.id);
+        });
+    });
+}
 
 /**
  * Shows the API key stored state with remove button

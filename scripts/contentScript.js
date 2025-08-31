@@ -15,6 +15,20 @@ let callCount = 0;
 const activeCarouselObservers = new WeakMap();
 
 /**
+ * Initialize the extension - only run if API key exists
+ */
+function initializeExtension() {
+    chrome.storage.sync.get(['omdbApiKey'], (result) => {
+        if (!result.omdbApiKey) {
+            return;
+        }
+
+        // API key exists, start the extension
+        waitForContent(setupNetflixWatchers);
+    });
+}
+
+/**
  * Injects Rotten Tomatoes rating into Netflix thumbnails.
  * It checks for existing containers, fetches ratings, and appends the SVG.
  * @param {MutationRecord[]|null} mutationList - Mutation list from observer
@@ -249,4 +263,4 @@ function waitForContent(callback) {
     }, 300);
 }
 
-waitForContent(setupNetflixWatchers);
+initializeExtension();

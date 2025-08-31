@@ -24,8 +24,8 @@ Rotten Score is a Chrome extension that enhances your Netflix browsing experienc
 
 3. **Set Up OMDb API Key**
    - The extension uses the [OMDb API](https://www.omdbapi.com/) to fetch ratings.
-   - Copy [`scripts/config.example.js`](scripts/config.example.js) to `scripts/config.js`.
-   - Add your OMDb API key in the new `config.js` file.
+   - Get your api key from [OMDb API](https://www.omdbapi.com/apikey.aspx).
+   - Add your OMDb API key from the popup menu.
 
 ## Usage
 
@@ -33,32 +33,10 @@ Rotten Score is a Chrome extension that enhances your Netflix browsing experienc
 - Rotten Tomatoes ratings will appear on movie and show thumbnails.
 - Click the extension icon to view the number of API calls made today.
 
-## File Structure
-
-```
-.
-├── icons/                # Extension icons and SVGs
-├── scripts/              # Content, background, and popup scripts
-│   ├── background.js
-│   ├── config.js
-│   ├── contentScript.js
-│   └── popup.js
-├── popup.html            # Popup UI
-├── manifest.json         # Chrome extension manifest
-├── package.json          # Project metadata
-├── .gitignore
-└── README.md
-```
-
-## Development
-
-- **Content Script:** [`scripts/contentScript.js`](scripts/contentScript.js) injects ratings into Netflix.
-- **Background Script:** [`scripts/background.js`](scripts/background.js) handles API requests and storage.
-- **Popup:** [`popup.html`](popup.html) and [`scripts/popup.js`](scripts/popup.js) show API call stats.
-
 ## Permissions
 
 - `storage`: To cache ratings and track API usage.
+- `tabs`: To query and reload Netflix tabs.
 
 ## Credits
 

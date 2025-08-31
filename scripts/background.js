@@ -1,12 +1,15 @@
-importScripts('config.js');
-
 let apiCallCount = 0;
 let lastApiCallDate = '';
+let cachedApiKey = null;
 
 // Initialize the API call count and last call date from storage
 chrome.storage.local.get(['apiCallCount', 'lastApiCallDate'], (result) => {
     apiCallCount = result.apiCallCount || 0;
     lastApiCallDate = result.lastApiCallDate || getTodayString();
+});
+
+chrome.storage.sync.get(['omdbApiKey'], (result) => {
+    cachedApiKey = result.omdbApiKey || null;
 });
 
 chrome.runtime.onMessage.addListener(
@@ -21,8 +24,13 @@ chrome.runtime.onMessage.addListener(
         if (request.type === 'fetch-rt-rating' && request.title) {
             updateDailyApiCallCount();
 
-            // @ts-ignore
-            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${OMDB_API_KEY}`;
+            if (!cachedApiKey) {
+                console.error('API key not found');
+                sendResponse({ rating: null, error: 'API key not found' });
+                return;
+            }
+
+            const apiUrl = `https://www.omdbapi.com/?t=${encodeURIComponent(request.title)}&apikey=${cachedApiKey}`;
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
@@ -35,6 +43,7 @@ chrome.runtime.onMessage.addListener(
                     sendResponse({ rating });
                 })
                 .catch(() => sendResponse({ rating: null }));
+
             return true;
         }
     }
@@ -87,3 +96,35 @@ function saveRatingToStorage(title, rating) {
         chrome.storage.local.set({ ratings });
     });
 }
+
+/**
+ * Updates the extension badge based on API key status
+ */
+function updateExtensionBadge() {
+    chrome.storage.sync.get(['omdbApiKey'], (result) => {
+        if (!result.omdbApiKey) {
+            // Show warning badge when no API key
+            chrome.action.setBadgeText({ text: '!' });
+            chrome.action.setBadgeBackgroundColor({ color: '#FFD600' });
+            chrome.action.setTitle({ title: 'RottenScore - API key required' });
+        } else {
+            // Clear badge when API key exists
+            chrome.action.setBadgeText({ text: '' });
+            chrome.action.setTitle({ title: 'RottenScore - Active' });
+        }
+    });
+}
+
+// Check badge status on startup
+chrome.runtime.onStartup.addListener(updateExtensionBadge);
+chrome.runtime.onInstalled.addListener(updateExtensionBadge);
+
+// Listen for storage changes to update badge
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'sync' && changes.omdbApiKey) {
+        cachedApiKey = changes.omdbApiKey.newValue || null;
+        updateExtensionBadge();
+    }
+});
+
+updateExtensionBadge();
