@@ -122,7 +122,7 @@ chrome.runtime.onInstalled.addListener(updateExtensionBadge);
 // Listen for storage changes to update badge
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'sync' && changes.omdbApiKey) {
-        cachedApiKey = changes.omdbApiKey.newValue || null; 
+        cachedApiKey = changes.omdbApiKey.newValue || null;
         updateExtensionBadge();
     }
 });
