@@ -1,5 +1,6 @@
 let apiCallCount = 0;
 let lastApiCallDate = '';
+let cachedApiKey = null;
 
 // Initialize the API call count and last call date from storage
 chrome.storage.local.get(['apiCallCount', 'lastApiCallDate'], (result) => {
@@ -121,6 +122,7 @@ chrome.runtime.onInstalled.addListener(updateExtensionBadge);
 // Listen for storage changes to update badge
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'sync' && changes.omdbApiKey) {
+        cachedApiKey = changes.omdbApiKey.newValue || null; 
         updateExtensionBadge();
     }
 });
