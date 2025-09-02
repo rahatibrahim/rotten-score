@@ -42,6 +42,13 @@ body {
     font-weight: 200;
     letter-spacing: 1px;
     color: #725355;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.row-title .material-symbols-outlined {
+    font-size: 0.9rem;
 }
 
 .field-box {
