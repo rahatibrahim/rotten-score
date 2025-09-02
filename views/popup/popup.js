@@ -92,9 +92,8 @@ function reloadNetflixTabs() {
  * Shows the API key stored state with remove button
  */
 function showApiKeyStored() {
-    document.getElementById('api-key-label').textContent = 'API key is stored';
-    document.getElementById('api-key-input').style.display = 'none';
-    document.getElementById('api-key-stored').style.display = 'block';
+    document.getElementById('api-input-row').style.display = 'none';
+    document.getElementById('api-stored-row').style.display = 'flex';
 }
 
 /**
@@ -111,10 +110,8 @@ function removeApiKey() {
  * Shows the API key input form
  */
 function showApiKeyInput() {
-    document.getElementById('api-key-label').textContent = 'Enter OMDB API Key';
-    document.getElementById('api-key-input').style.display = 'flex';
-    document.getElementById('api-key-stored').style.display = 'none';
-    document.getElementById('omdb-key').value = '';
+    document.getElementById('api-input-row').style.display = 'flex';
+    document.getElementById('api-stored-row').style.display = 'none';
 }
 
 /**
