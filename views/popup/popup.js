@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for remove key button
     document.getElementById('remove-key').addEventListener('click', removeApiKey);
+
+    // Add event listener for help icon to open OMDB API key page
+    document.getElementById('api-key-help').addEventListener('click', function() {
+        chrome.tabs.create({
+            url: 'https://www.omdbapi.com/apikey.aspx',
+            active: true
+        });
+    });
 });
 
 /**
