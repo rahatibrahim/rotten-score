@@ -47,8 +47,9 @@ body {
     gap: 4px;
 }
 
-.row-title .material-symbols-outlined {
+#arrow-outward-icon {
     font-size: 0.9rem;
+    color: #6e4f83;
 }
 
 .field-box {
@@ -165,5 +166,9 @@ button:active {
 
     #count {
         color: #ff5252;
+    }
+
+    #arrow-outward-icon {
+        color: #00bcd4;
     }
 }
